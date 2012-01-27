@@ -1,7 +1,4 @@
 *~
 *.pyc
 sickenv
-the_index
-*.js
-*.css
 .sass-cache
