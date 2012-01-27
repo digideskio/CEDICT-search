@@ -1,0 +1,99 @@
+@import "mixins";
+
+$default-font-size: 24px;
+$query-font-size: 30px;
+$hanzi-font-size: 40px;
+
+$label-default-color: #777;
+$label-faded-color: #ccc;
+
+body {
+    font-family: "Open Sans", "lucida grande", lucida, sans-serif;
+    font-size: $default-font-size;
+    width: 70%;
+    margin: 20px auto;
+}
+
+:focus {
+    outline: none; /* stop browsers from adding their own border around focused form elms */
+}
+
+.sick-input {
+    /*
+       setting this to relative makes the coordinates for all absolutely positioned children
+       relative to the upper left of this elm, rather than the upper left of the window
+    */
+    position: relative;
+
+    input {
+        @include border-radius(15px);
+        @include box-shadow(0, 0, 0, #000, 0, 2px, 2px, #aaa);
+        font-size: $query-font-size;
+        width: 100%;
+        height: 60px;
+        padding: 15px;
+    }
+
+    label {
+        position: absolute;
+        top: 14px;
+        left: 30px;
+        font-size: $query-font-size;
+        color: $label-default-color;
+        @include transition(color, .2s, linear, 0);
+    }
+
+    &.focused {
+        input {
+
+        }
+        label {
+            color: $label-faded-color;
+            @include transition(color, .2s, linear, 0);
+            cursor: text;
+        }
+    }
+
+    &.populated {
+        input {
+
+        }
+        label {
+            display: none;
+        }
+    }
+
+    .ajax-loading-wheel {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        display: none;
+    }
+
+    &.searching {
+        .ajax-loading-wheel {
+            display: block;
+        }
+    }
+}
+
+#results {
+    .result {
+        &:nth-child(odd) {
+            background-color: #ddd;
+        }
+
+        padding: 25px;
+
+        .hanzi {
+            font-size: $hanzi-font-size;
+        }
+        .pinyin {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .english-list {
+            margin: 10px 0 0 0;
+        }
+    }
+}

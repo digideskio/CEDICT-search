@@ -1,0 +1,47 @@
+@mixin border-radius($radius) {
+    -webkit-border-radius: $radius;
+    border-radius: $radius;
+    -moz-border-radius: $radius;
+}
+
+@mixin box-shadow($xoffset, $yoffset, $blur_size, $color, $inset_xoffset: 0, $inset_yoffset: 0, $inset_blur_size: 0, $inset_color: #000) {
+    -moz-box-shadow: $xoffset $yoffset $blur_size $color, inset $inset_xoffset $inset_yoffset $inset_blur_size $inset_color;
+    -webkit-box-shadow: $xoffset $yoffset $blur_size $color, inset $inset_xoffset $inset_yoffset $inset_blur_size $inset_color;
+    box-shadow: $xoffset $yoffset $blur_size $color, inset $inset_xoffset $inset_yoffset $inset_blur_size $inset_color;
+}
+
+@mixin vertical-gradient($top-color, $bottom-color) {
+    background: $bottom-color; /* fallback for old browsers */
+
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='$top-color', endColorstr='$bottom-color'); /* IE-only */
+    background: -webkit-gradient(linear, left top, left bottom, from($top-color), to($bottom-color)); /* webkit */
+    background: -moz-linear-gradient(top,  $top-color,  $bottom-color); /* firefox 3.6+ */
+}
+
+@mixin unselectable() {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: -moz-none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+@mixin selectable() {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -o-user-select: text;
+    user-select: text;
+}
+
+@mixin text-shadow($color, $xoffset, $yoffset, $blur_radius) {
+    text-shadow: $color $xoffset $yoffset $blur_radius;
+    -webkit-text-shadow: $color $xoffset $yoffset $blur_radius;
+    -moz-text-shadow: $color $xoffset $yoffset $blur_radius;
+}
+
+@mixin transition($property, $duration, $timing_func, $delay) {
+    transition: $property $duration $timing_func $delay;
+    -webkit-transition: $property $duration $timing_func $delay;
+    -moz-transition: $property $duration $timing_func $delay;
+}
