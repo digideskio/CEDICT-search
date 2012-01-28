@@ -1,0 +1,8 @@
+Flask==0.8
+Jinja2==2.6
+Werkzeug==0.8.2
+Whoosh==2.3.2
+distribute==0.6.24
+pymongo==2.1.1
+simplejson==2.3.2
+wsgiref==0.1.2
