@@ -1,8 +1,11 @@
 import re
 import simplejson
+import jianfan
 
 from flask import Flask
 from db import THE_DICTIONARY
+
+from query_detection import is_cjk, is_pinyin
 
 MAX_RESULTS = 200
 
@@ -18,15 +21,14 @@ def make_cmp(query, search_field):
 
     def get_position(result):
         'a good result has the query occuring early'
-        return result[search_field].index(words[0])
+        return normalize(result[search_field]).index(words[0])
 
     def get_portion(result):
         'a good result has some definition where the query is a large % of the total definition'
         if search_field == 'english_full':
-            candidates = [s.lower() for s in result['english_list']]
+            candidates = [normalize(s) for s in result['english_list']]
         else:
-            candidates = [result[search_field]]
-
+            candidates = [normalize(result[search_field])]
         # comparators need to return integers, so, scale up the ratios to avoid rounding error.
         # whether this is 100 or 100000 doesn't matter. (it's effectively the # of significant figures.)
         scale = 100
@@ -54,15 +56,27 @@ def normalize(query):
 def search(query):
     query = normalize(query)
 
+    if is_cjk(query):
+        search_field = 'simplified'
+        search_field_display = 'Hanzi'
+
+        # we can support both traditional and simplified queries, by converting traditional to simplified.
+        # (traditional->simplified is many to one, which means it's much harder to go the other way.)
+        # luckily someone make a pip-installable library jianfan!
+        query = jianfan.ftoj(query)
+    elif is_pinyin(query):
+        search_field = 'pinyin'
+        search_field_display = 'Pinyin'
+    else:
+        search_field = 'english_full'
+        search_field_display = 'English'
+
     regex_str = query.replace(' ', '.*')
     regex = re.compile(regex_str, re.UNICODE | re.IGNORECASE)
 
     results_list = list(
-        THE_DICTIONARY.find({'english_full': regex}, {'_id': 0}).limit(MAX_RESULTS)
+        THE_DICTIONARY.find({search_field: regex}, {'_id': 0}).limit(MAX_RESULTS)
         )
-
-    search_field = 'english_full'
-    search_field_display = 'English'
 
     # comment out this line to see the effect of search result ranking.
     results_list.sort(cmp=make_cmp(query, search_field))
