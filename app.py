@@ -3,11 +3,20 @@ import simplejson
 import jianfan
 
 from flask import Flask
-from db import THE_DICTIONARY
+from whoosh.index import open_dir
+from whoosh.qparser import QueryParser
+from db import THE_DICTIONARY, INDEX_DIR
 
 from query_detection import is_cjk, is_pinyin
 
 MAX_RESULTS = 200
+
+# whoosh is really only helpful for english here (and maybe pinyin.) two reasons:
+# 1. our source is a chinese -> english dictionary. with text indexing on english we can make it go both ways.
+# 2. chinese characters don't have spaces, so without segmentation our indexer wouldn't know how to break them into words to begin with.
+whoosh_idx = open_dir(INDEX_DIR)
+searcher = whoosh_idx.searcher()
+query_parser = QueryParser('english_full', whoosh_idx.schema)
 
 app = Flask(__name__)
 app.debug = True ## DON'T LAUNCH THIS TO THE PUBLIC
@@ -71,12 +80,23 @@ def search(query):
         search_field = 'english_full'
         search_field_display = 'English'
 
-    regex_str = query.replace(' ', '.*')
-    regex = re.compile(regex_str, re.UNICODE | re.IGNORECASE)
+    results_list = []
+    if search_field == 'english_full':
+        whoosh_q = query_parser.parse(query)
+        whoosh_results_list = searcher.search(whoosh_q)
+        # whoosh returns dictionary-like Hit objects. convert to explicit dictionaries.
+        whoosh_results_list = [dict(result) for result in whoosh_results_list]
+        results_list.extend(whoosh_results_list)
 
-    results_list = list(
-        THE_DICTIONARY.find({search_field: regex}, {'_id': 0}).limit(MAX_RESULTS)
-        )
+    if not results_list: # only resort to mongo scanning if no results found yet.
+        regex_str = query.replace(' ', '.*')
+        # note: typically you want to escape user-generated strings before turning them into regexes.
+        # in this case, i don't care.
+        regex = re.compile(regex_str, re.UNICODE | re.IGNORECASE)
+
+        results_list.extend(list(
+            THE_DICTIONARY.find({search_field: regex}, {'_id': 0}).limit(MAX_RESULTS)
+            ))
 
     # comment out this line to see the effect of search result ranking.
     results_list.sort(cmp=make_cmp(query, search_field))
